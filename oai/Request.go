@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"unicode"
 )
 
 // Request represents a request URL and query string to an OAI-PMH service
@@ -114,6 +115,13 @@ func (request *Request) Harvest(batchCallback func(*Response)) {
 	}
 }
 
+func printOnly(r rune) rune {
+	if unicode.IsPrint(r) {
+		return r
+	}
+	return -1
+}
+
 // Perform an HTTP GET request using the OAI Requests fields
 // and return an OAI Response reference
 func (request *Request) Perform() (oaiResponse *Response) {
@@ -134,6 +142,7 @@ func (request *Request) Perform() (oaiResponse *Response) {
 	}
 
 	// Unmarshall all the data
+	body = []byte(strings.Map(printOnly, string(body)))
 	err = xml.Unmarshal(body, &oaiResponse)
 	if err != nil {
 		panic(err)
