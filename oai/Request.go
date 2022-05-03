@@ -142,7 +142,8 @@ func (request *Request) Perform() (oaiResponse *Response) {
 	}
 
 	// Unmarshall all the data
-	body = []byte(strings.Map(printOnly, string(body)))
+	bodyStr := strings.ReplaceAll(string(body), "\n", " ")
+	body = []byte(strings.Map(printOnly, bodyStr))
 	err = xml.Unmarshal(body, &oaiResponse)
 	if err != nil {
 		panic(err)
