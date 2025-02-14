@@ -57,9 +57,13 @@ func (request *Request) HarvestIdentifiers(callback func(*Header)) {
 
 // HarvestRecords harvest the identifiers of a complete OAI set
 // call the identifier callback function for each Header
-func (request *Request) HarvestRecords(callback func(*Record)) {
+func (request *Request) HarvestRecords(callback func(*Record), errorCallback func(*OAIError)) {
 	request.Verb = "ListRecords"
 	request.Harvest(func(resp *Response) {
+		if resp.Error.Code != "" && errorCallback != nil {
+			errorCallback(&resp.Error)
+			return
+		}
 		records := resp.ListRecords.Records
 		for _, record := range records {
 			callback(&record)
