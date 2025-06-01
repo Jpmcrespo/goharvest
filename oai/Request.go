@@ -24,7 +24,7 @@ type Request struct {
 	Until           string
 
 	UserAgent string // Optional User-Agent header
-	SpoofTLS  bool   // Optional Spoof TLS
+	SpoofTLS  bool   // Optional Spoof TLS  
 
 }
 
