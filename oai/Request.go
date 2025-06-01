@@ -21,8 +21,9 @@ type Request struct {
 	From            string
 	Until           string
 
-	UserAgent string // Optional User-Agent header
-	SpoofTLS  bool   // Optional Spoof TLS
+	UserAgent      string // Optional User-Agent header
+	SpoofTLS       bool   // Optional Spoof TLS
+	TimeoutSeconds int    // Optional timeout in seconds
 
 }
 
@@ -141,7 +142,10 @@ func (request *Request) Perform() (oaiResponse *Response) {
 
 	// If SpoofTLS is set, use the utlsclient to perform the request
 	if request.SpoofTLS {
-		resp, err = performSpoofedRequest(request.GetFullURL(), request.UserAgent)
+		if request.TimeoutSeconds == 0 {
+			request.TimeoutSeconds = 30 // Default timeout of 30 seconds
+		}
+		resp, err = performSpoofedRequest(request.GetFullURL(), request.UserAgent, request.TimeoutSeconds)
 	} else {
 		// Otherwise, use the standard http client
 		resp, err = performRequest(request.GetFullURL(), request.UserAgent)
@@ -172,10 +176,10 @@ func (request *Request) Perform() (oaiResponse *Response) {
 	return
 }
 
-func performSpoofedRequest(url string, userAgent string) (*http.Response, error) {
+func performSpoofedRequest(url string, userAgent string, timeoutSeconds int) (*http.Response, error) {
 	opts := utlsclient.RequestOptions{
 		URL:     url,
-		Timeout: 15,
+		Timeout: timeoutSeconds,
 		JA3:     "chrome",
 		Headers: map[string]string{
 			"User-Agent": userAgent,
