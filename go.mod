@@ -1,4 +1,4 @@
-module github.com/jpmcrespo/goharvest
+module github.com/Jpmcrespo/goharvest
 
 go 1.24
 
