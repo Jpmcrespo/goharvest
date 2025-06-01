@@ -175,7 +175,7 @@ func (request *Request) Perform() (oaiResponse *Response) {
 func performSpoofedRequest(url string, userAgent string) (*http.Response, error) {
 	opts := utlsclient.RequestOptions{
 		URL:     url,
-		Timeout: 10,
+		Timeout: 15,
 		JA3:     "chrome",
 		Headers: map[string]string{
 			"User-Agent": userAgent,
