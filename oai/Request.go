@@ -1,12 +1,10 @@
 package oai
 
 import (
-	"context"
 	"encoding/xml"
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
 	"unicode"
 
 	"github.com/Jpmcrespo/goharvest/oai/utlsclient"
@@ -24,7 +22,7 @@ type Request struct {
 	Until           string
 
 	UserAgent string // Optional User-Agent header
-	SpoofTLS  bool   // Optional Spoof TLS  
+	SpoofTLS  bool   // Optional Spoof TLS
 
 }
 
@@ -184,10 +182,7 @@ func performSpoofedRequest(url string, userAgent string) (*http.Response, error)
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
-
-	resp, err := utlsclient.FetchURL(ctx, opts)
+	resp, err := utlsclient.FetchURL(opts)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,6 @@
 package utlsclient
 
 import (
-	"context"
 	"net/http"
 )
 
@@ -14,13 +13,13 @@ type RequestOptions struct {
 }
 
 // FetchURL performs a spoofed GET request using uTLS and HTTP/2
-func FetchURL(ctx context.Context, opts RequestOptions) (*http.Response, error) {
+func FetchURL(opts RequestOptions) (*http.Response, error) {
 	client, err := NewSpoofedHTTPClient(opts)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", opts.URL, nil)
+	req, err := http.NewRequest("GET", opts.URL, nil)
 	if err != nil {
 		return nil, err
 	}
