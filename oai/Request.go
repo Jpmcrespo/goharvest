@@ -9,7 +9,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/jpmcrespo/goharvest/oai/utlsclient"
+	"github.com/Jpmcrespo/goharvest/oai/utlsclient"
 )
 
 // Request represents a request URL and query string to an OAI-PMH service
