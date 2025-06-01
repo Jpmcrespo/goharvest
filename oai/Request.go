@@ -18,6 +18,9 @@ type Request struct {
 	ResumptionToken string
 	From            string
 	Until           string
+
+	UserAgent string // Optional User-Agent header
+
 }
 
 // GetFullURL represents the OAI Request in a string format
@@ -130,7 +133,19 @@ func printOnly(r rune) rune {
 // and return an OAI Response reference
 func (request *Request) Perform() (oaiResponse *Response) {
 
-	resp, err := http.Get(request.GetFullURL())
+	req, err := http.NewRequest("GET", request.GetFullURL(), nil)
+	if err != nil {
+		panic(err)
+	}
+	// Set the User-Agent header if it is set
+	if request.UserAgent != "" {
+		req.Header.Set("User-Agent", request.UserAgent)
+	}
+
+	// Perform the HTTP GET request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
 	if err != nil {
 		panic(err)
 	}
