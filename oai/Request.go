@@ -1,11 +1,15 @@
 package oai
 
 import (
+	"context"
 	"encoding/xml"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 	"unicode"
+
+	"github.com/jpmcrespo/goharvest/oai/utlsclient"
 )
 
 // Request represents a request URL and query string to an OAI-PMH service
@@ -20,6 +24,7 @@ type Request struct {
 	Until           string
 
 	UserAgent string // Optional User-Agent header
+	SpoofTLS  bool   // Optional Spoof TLS
 
 }
 
@@ -133,18 +138,16 @@ func printOnly(r rune) rune {
 // and return an OAI Response reference
 func (request *Request) Perform() (oaiResponse *Response) {
 
-	req, err := http.NewRequest("GET", request.GetFullURL(), nil)
-	if err != nil {
-		panic(err)
-	}
-	// Set the User-Agent header if it is set
-	if request.UserAgent != "" {
-		req.Header.Set("User-Agent", request.UserAgent)
-	}
+	var resp *http.Response
+	var err error
 
-	// Perform the HTTP GET request
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// If SpoofTLS is set, use the utlsclient to perform the request
+	if request.SpoofTLS {
+		resp, err = performSpoofedRequest(request.GetFullURL(), request.UserAgent)
+	} else {
+		// Otherwise, use the standard http client
+		resp, err = performRequest(request.GetFullURL(), request.UserAgent)
+	}
 
 	if err != nil {
 		panic(err)
@@ -169,6 +172,41 @@ func (request *Request) Perform() (oaiResponse *Response) {
 	}
 
 	return
+}
+
+func performSpoofedRequest(url string, userAgent string) (*http.Response, error) {
+	opts := utlsclient.RequestOptions{
+		URL:     url,
+		Timeout: 10,
+		JA3:     "chrome",
+		Headers: map[string]string{
+			"User-Agent": userAgent,
+		},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	resp, err := utlsclient.FetchURL(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}
+
+func performRequest(url string, userAgent string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		panic(err)
+	}
+	// Set the User-Agent header if it is set
+	if userAgent != "" {
+		req.Header.Set("User-Agent", userAgent)
+	}
+
+	// Perform the HTTP GET request
+	client := &http.Client{}
+	return client.Do(req)
 }
 
 // ResumptionToken determine the resumption token in this Response
