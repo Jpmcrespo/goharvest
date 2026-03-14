@@ -2,6 +2,7 @@ package oai
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -9,6 +10,22 @@ import (
 
 	"github.com/Jpmcrespo/goharvest/oai/utlsclient"
 )
+
+// OAIRequestError represents an error that occurred during an OAI-PMH request
+// It includes the full response body for debugging purposes
+type OAIRequestError struct {
+	Message string
+	URL     string
+	Body    string
+	Err     error
+}
+
+func (e *OAIRequestError) Error() string {
+	if e.Body != "" {
+		return fmt.Sprintf("%s\nURL: %s\nError: %v\nResponse Body: %s", e.Message, e.URL, e.Err, e.Body)
+	}
+	return fmt.Sprintf("%s\nURL: %s\nError: %v", e.Message, e.URL, e.Err)
+}
 
 // Request represents a request URL and query string to an OAI-PMH service
 type Request struct {
@@ -140,19 +157,25 @@ func (request *Request) Perform() (oaiResponse *Response) {
 	var resp *http.Response
 	var err error
 
+	url := request.GetFullURL()
+
 	// If SpoofTLS is set, use the utlsclient to perform the request
 	if request.SpoofTLS {
 		if request.TimeoutSeconds == 0 {
 			request.TimeoutSeconds = 30 // Default timeout of 30 seconds
 		}
-		resp, err = performSpoofedRequest(request.GetFullURL(), request.UserAgent, request.TimeoutSeconds)
+		resp, err = performSpoofedRequest(url, request.UserAgent, request.TimeoutSeconds)
 	} else {
 		// Otherwise, use the standard http client
-		resp, err = performRequest(request.GetFullURL(), request.UserAgent)
+		resp, err = performRequest(url, request.UserAgent)
 	}
 
 	if err != nil {
-		panic(err)
+		panic(&OAIRequestError{
+			Message: "Failed to perform HTTP request",
+			URL:     url,
+			Err:     err,
+		})
 	}
 
 	// Make sure the response body object will be closed after
@@ -162,7 +185,11 @@ func (request *Request) Perform() (oaiResponse *Response) {
 	// Read all the data
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		panic(&OAIRequestError{
+			Message: "Failed to read response body",
+			URL:     url,
+			Err:     err,
+		})
 	}
 
 	// Unmarshall all the data
@@ -170,7 +197,12 @@ func (request *Request) Perform() (oaiResponse *Response) {
 	body = []byte(strings.Map(printOnly, bodyStr))
 	err = xml.Unmarshal(body, &oaiResponse)
 	if err != nil {
-		panic(err)
+		panic(&OAIRequestError{
+			Message: "Failed to unmarshal XML response",
+			URL:     url,
+			Body:    string(body),
+			Err:     err,
+		})
 	}
 
 	return
@@ -196,7 +228,11 @@ func performSpoofedRequest(url string, userAgent string, timeoutSeconds int) (*h
 func performRequest(url string, userAgent string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		panic(err)
+		panic(&OAIRequestError{
+			Message: "Failed to create HTTP request",
+			URL:     url,
+			Err:     err,
+		})
 	}
 	// Set the User-Agent header if it is set
 	if userAgent != "" {
