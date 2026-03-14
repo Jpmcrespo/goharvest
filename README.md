@@ -9,7 +9,7 @@ Hello OAI
 package main
 
 import (
-	"github.com/renevanderark/goharvest/oai"
+	"github.com/Jpmcrespo/goharvest/oai"
 	"fmt"
 )
 
@@ -39,18 +39,18 @@ Get started
 Clone the project into your Go workspace
 ```sh
 $ cd $GOPATH/src
-$ mkdir -p github.com/renevanderark
-$ cd github.com/renevanderark
-$ git clone https://github.com/renevanderark/goharvest.git
+$ mkdir -p github.com/Jpmcrespo
+$ cd github.com/Jpmcrespo
+$ git clone https://github.com/Jpmcrespo/goharvest.git
 ```
 
 Starting the demo's:
 
 ```sh
-$ go run $GOPATH/src/github.com/renevanderark/goharvest/bin/oai_demo/main.go
-$ go run $GOPATH/src/github.com/renevanderark/goharvest/bin/oai_harvest_demo1/main.go
-$ go run $GOPATH/src/github.com/renevanderark/goharvest/bin/oai_harvest_demo2/main.go
-$ go run $GOPATH/src/github.com/renevanderark/goharvest/bin/hello_oai/main.go
-$ go run $GOPATH/src/github.com/renevanderark/goharvest/bin/channel_harvest_demo1/main.go
+$ go run $GOPATH/src/github.com/Jpmcrespo/goharvest/bin/oai_demo/main.go
+$ go run $GOPATH/src/github.com/Jpmcrespo/goharvest/bin/oai_harvest_demo1/main.go
+$ go run $GOPATH/src/github.com/Jpmcrespo/goharvest/bin/oai_harvest_demo2/main.go
+$ go run $GOPATH/src/github.com/Jpmcrespo/goharvest/bin/hello_oai/main.go
+$ go run $GOPATH/src/github.com/Jpmcrespo/goharvest/bin/channel_harvest_demo1/main.go
 ```
 
